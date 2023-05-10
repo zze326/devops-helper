@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, toRefs, onMounted, ref, onUnmounted, nextTick } from 'vue'
+import { reactive, toRefs, onMounted, ref, onUnmounted, nextTick, defineExpose } from 'vue'
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { WebLinksAddon } from 'xterm-addon-web-links';
@@ -29,10 +29,14 @@ const props = defineProps(
         paddingBottom: {
             type: Number,
             default: 0
+        },
+        innerData: {
+            type: Boolean,
+            default: false
         }
     })
 
-const emits = defineEmits(['close', 'connected', 'reload', 'ctrlU'])
+const emits = defineEmits(['close', 'connected', 'reload', 'ctrlU', "message"])
 
 const radiusEm = props.inBody ? 0 : 0.5
 
@@ -71,6 +75,7 @@ const cancelSearch = () => {
 }
 
 term.attachCustomKeyEventHandler((event) => {
+    console.log("searchMode:", searchMode)
     if (event.key === "f" && event.ctrlKey) {
         searchText.value = '';
         searchMode.value = true;
@@ -78,7 +83,7 @@ term.attachCustomKeyEventHandler((event) => {
             searchInputRef.value!.focus();
         });
         return false;
-    } else if (event.key === "Escape" && searchMode) {
+    } else if (event.key === "Escape" && searchMode.value) {
         cancelSearch()
         return false;
     } else if (event.key === "u" && event.ctrlKey && event.type !== "keyup") {
@@ -96,15 +101,21 @@ term.loadAddon(searchAddon);
 
 const resizeTerminal = () => {
     if (!terminalRef.value) return
-    emits("connected")
     state.connected = true
-    terminalRef.value.style.height = props.inBody ? `${document.body.clientHeight}px` : `${(terminalRef.value!.offsetParent as HTMLDivElement)!.offsetParent!.clientHeight - props.paddingBottom}px`
+    terminalRef.value.style.height = props.inBody ? `${document.body.clientHeight - props.paddingBottom}px` : `${(terminalRef.value!.offsetParent as HTMLDivElement)!.offsetParent!.clientHeight - props.paddingBottom}px`
     fitAddon.fit();
     term.resize(term.cols, term.rows)
     if (ws.readyState) {
         var msg = { type: "resize", rows: term.rows, cols: term.cols }
         ws.send(JSON.stringify(msg))
     }
+}
+
+const onOpen = () => {
+    resizeTerminal()
+    nextTick(() => {
+        emits("connected")
+    })
 }
 
 const ws = new WebSocket(props.wsUrl)
@@ -114,7 +125,7 @@ const init = () => {
     term.open(terminalRef.value);
     term.focus()
     term.writeln('Connecting...');
-    ws.onopen = resizeTerminal
+    ws.onopen = onOpen
     ws.onclose = () => {
         emits("close")
         state.connected = false
@@ -125,8 +136,18 @@ const init = () => {
             center: true,
         });
     }
-    ws.onmessage = e => {
-        term.write(e.data)
+    ws.onmessage = async e => {
+        if (props.innerData) {
+            let msgObj = JSON.parse(e.data)
+            emits("message", msgObj)
+            if (msgObj.clear) {
+                term.reset()
+            }
+            term.write(msgObj.data)
+        } else {
+            emits("message", e.data)
+            term.write(e.data)
+        }
     }
     ws.onerror = () => {
         emits("close")
@@ -152,6 +173,25 @@ const init = () => {
         }
     })
 }
+
+const wsSend = (msg: { type: string, input: string }) => {
+    if (!state.connected) return
+    ws.send(JSON.stringify(msg))
+}
+
+const termWrite = (data: string) => {
+    term.write(data)
+}
+
+const termClear = () => {
+    term.clear()
+}
+
+defineExpose({
+    wsSend,
+    termWrite,
+    termClear
+})
 
 onMounted(() => {
     init()

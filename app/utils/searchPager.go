@@ -27,6 +27,7 @@ type Pager struct {
 	Order         string        `json:"order,optional"`
 	Wheres        []WhereClause `json:"wheres"`
 	SelectColumns []any         `json:"select_columns"`
+	OmitColumns   []string      `json:"omit_columns"`
 	Search        string        `json:"search"`
 }
 
@@ -112,6 +113,10 @@ func Paginate[T any](db *gorm.DB, pager *Pager, results *[]*T) (int, error) {
 	// 执行查询并返回结果
 	if len(pager.SelectColumns) > 0 {
 		query = query.Select(pager.SelectColumns[0], pager.SelectColumns[1:]...)
+	}
+
+	if len(pager.OmitColumns) > 0 {
+		query = query.Omit(pager.OmitColumns...)
 	}
 	return total, query.Find(&results).Error
 }

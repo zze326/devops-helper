@@ -1,6 +1,6 @@
 import request from '@/utils/request';
 import { IHost } from './host';
-import { IHostGroupPermission } from './host_group_permission';
+import { IHostGroupPermission } from './host-group-permission';
 
 export interface IHostGroup {
     id?: number

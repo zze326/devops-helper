@@ -1,6 +1,9 @@
 package utils
 
-import "os"
+import (
+	"os"
+	"strings"
+)
 
 func FileMode(mode os.FileMode) string {
 	var buf [32]byte
@@ -22,7 +25,22 @@ func FileMode(mode os.FileMode) string {
 	return string(b)
 }
 
-// 创建或打开文件，返回文件句柄
-func OpenFile(path string) (*os.File, error) {
-	return os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0666)
+func OpenOrCreateFile(filepath string) (*os.File, error) {
+	dirPath := filepath[:strings.LastIndex(filepath, "/")]
+	if err := os.MkdirAll(dirPath, 0755); err != nil {
+		return nil, err
+	}
+
+	file, err := os.OpenFile(filepath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
+}
+
+// 判断文件是否存在
+func FileExists(path string) bool {
+	_, err := os.Lstat(path)
+	return !os.IsNotExist(err)
 }

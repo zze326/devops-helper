@@ -22,14 +22,17 @@ import (
 
 type Host struct {
 	gormc.Controller
-	writeBuffer   bytes.Buffer
-	readBuffer    bytes.Buffer
-	session       *ssh.Session
-	sessionBuffer bytes.Buffer
-	host          *o_resource.Host
-	operatorName  string
-	operatorID    int
-	isSaveSession bool
+	writeBuffer      bytes.Buffer
+	readBuffer       bytes.Buffer
+	session          *ssh.Session
+	sessionFile      *os.File
+	sessionFilepath  string
+	host             *o_resource.Host
+	operatorName     string
+	operatorID       int
+	operatorRealName string
+	isSaveSession    bool
+	startTime        time.Time
 }
 
 func (c Host) Add(req v_resource.AddHostReq) revel.Result {

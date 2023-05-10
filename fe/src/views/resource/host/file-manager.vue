@@ -1,63 +1,60 @@
 <template>
-    <el-drawer v-model="state.visible" title="文件管理器" direction="rtl" :before-close="handleFileDrawerClose" size="50%">
-        <div class="file-manager">
-            <el-row class="toolbar">
-                <el-col :span="16">
-                    <PathNavigater :path="state.path" @click="handleFilePathChange" />
-                    <!-- <el-progress :percentage="50" :stroke-width="15" striped /> -->
-                </el-col>
-                <el-col :span="8">
-                    <div class="actions">
-                        <el-row :gutter="12">
-                            <el-col :span="14">
-                                <el-text>显示隐藏文件: &nbsp;&nbsp;</el-text>
-                                <el-switch inline-prompt active-text="开启" @change="handleHiddenFilesSwitchChange"
-                                    inactive-text="关闭" v-model="state.showHiddenFiles" active-color="#13ce66"></el-switch>
-                            </el-col>
-                            <el-col :span="10">
-                                <el-progress v-if="state.uploading" :text-inside="true" :stroke-width="32"
-                                    :percentage="state.uploadProcessNum" status="success" />
-                                <span v-else>
-                                    <el-button icon="Upload" style="width: 100%;" type="primary"
-                                        @click="handleUploadClick">上传文件</el-button>
-                                    <input ref="fileInput" type="file" style="display: none" @change="handleFileChange" />
-                                </span>
-                            </el-col>
-                        </el-row>
-                    </div>
-                </el-col>
-            </el-row>
-            <div class="table">
-                <el-table :data="state.files" v-loading="state.loading" style="width: 100%">
-                    <el-table-column label="名称" sortable sort-by="name" min-width="120" align="center">
-                        <template #default="{ row }">
-                            <el-button v-if="row.is_dir" type="primary" link @click="handleFilePathChange(row.abs_path)">{{
-                                row.name
-                            }}</el-button>
-                            <el-text v-else>{{ row.name }}</el-text>
-                        </template>
-                    </el-table-column>
-                    <el-table-column sortable prop="size" sort-by="size" label="大小" align="center">
-                        <template #default="{ row }">
-                            {{ formatBytes(row.size) }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="mtime" sortable width="170" align="center" label="修改时间"></el-table-column>
-                    <el-table-column prop="mode" label="属性" width="110" sortable align="center"></el-table-column>
-                    <el-table-column label="操作" width="110" align="center">
-                        <template #default="{ row }">
-                            <el-button type="primary" v-if="!row.is_dir" link
-                                @click="handleDownloadFile(row)">下载</el-button>
-                            <el-button type="danger" v-if="!row.is_dir" link @click="handleDeleteFile(row)">删除</el-button>
-                        </template>
-                    </el-table-column>
-                </el-table>
-            </div>
+    <div class="file-manager">
+        <el-row class="toolbar">
+            <el-col :span="16">
+                <PathNavigater :path="state.path" @click="handleFilePathChange" />
+                <!-- <el-progress :percentage="50" :stroke-width="15" striped /> -->
+            </el-col>
+            <el-col :span="8">
+                <div class="actions">
+                    <el-row :gutter="12">
+                        <el-col :span="14">
+                            <el-text>显示隐藏文件: &nbsp;&nbsp;</el-text>
+                            <el-switch inline-prompt active-text="开启" @change="handleHiddenFilesSwitchChange"
+                                inactive-text="关闭" v-model="state.showHiddenFiles" active-color="#13ce66"></el-switch>
+                        </el-col>
+                        <el-col :span="10">
+                            <el-progress v-if="state.uploading" :text-inside="true" :stroke-width="32"
+                                :percentage="state.uploadProcessNum" status="success" />
+                            <span v-else>
+                                <el-button icon="Upload" style="width: 100%;" type="primary"
+                                    @click="handleUploadClick">上传文件</el-button>
+                                <input ref="fileInput" type="file" style="display: none" @change="handleFileChange" />
+                            </span>
+                        </el-col>
+                    </el-row>
+                </div>
+            </el-col>
+        </el-row>
+        <div class="table">
+            <el-table :data="state.files" v-loading="state.loading" style="width: 100%">
+                <el-table-column label="名称" sortable sort-by="name" min-width="120" align="center">
+                    <template #default="{ row }">
+                        <el-button v-if="row.is_dir" type="primary" link @click="handleFilePathChange(row.abs_path)">{{
+                            row.name
+                        }}</el-button>
+                        <el-text v-else>{{ row.name }}</el-text>
+                    </template>
+                </el-table-column>
+                <el-table-column sortable prop="size" sort-by="size" label="大小" align="center">
+                    <template #default="{ row }">
+                        {{ formatBytes(row.size) }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="mtime" sortable width="170" align="center" label="修改时间"></el-table-column>
+                <el-table-column prop="mode" label="属性" width="110" sortable align="center"></el-table-column>
+                <el-table-column label="操作" width="110" align="center">
+                    <template #default="{ row }">
+                        <el-button type="primary" v-if="!row.is_dir" link @click="handleDownloadFile(row)">下载</el-button>
+                        <el-button type="danger" v-if="!row.is_dir" link @click="handleDeleteFile(row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
         </div>
-    </el-drawer>
+    </div>
 </template>
 <script lang="ts" setup>
-import { reactive, ref, onUnmounted, watch } from 'vue'
+import { reactive, ref, onUnmounted, watch, onMounted } from 'vue'
 import { confirm } from '@/utils/generic'
 import { formatBytes } from '@/utils/calc'
 import { ElMessage } from 'element-plus'
@@ -72,10 +69,6 @@ interface fileinfo {
 
 const emits = defineEmits(["close", "downloadFile"])
 const props = defineProps({
-    visible: {
-        type: Boolean,
-        default: false,
-    },
     showHiddenFiles: {
         type: Boolean,
         default: false,
@@ -87,7 +80,6 @@ const props = defineProps({
 })
 
 const state = reactive({
-    visible: false,
     showHiddenFiles: false,
     files: <fileinfo[]>[],
     path: <string>"/",
@@ -115,68 +107,64 @@ const deleteFile = (path: string) => {
     }))
 }
 
-watch(
-    () => props.visible,
-    (newValue, _) => {
-        state.visible = newValue
-        if (newValue) {
-            ws = new WebSocket(props.wsUrl)
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data)
-                switch (data.type) {
-                    // 获取文件列表
-                    case "listData":
-                        state.path = data.path
-                        state.files = data.data
-                        state.loading = false
-                        break
-                    // 分片上传文件完成或失败
-                    case "uploadFileChunk":
-                        if (data.success) {
-                            state.uploadProcessNum = 100
-                            ElMessage.success(`上传成功`);
-                            setTimeout(() => {
-                                state.uploadProcessNum = 0
-                                state.uploading = false
-                            }, 2000);
-                            listFiles(state.path)
-                        } else {
-                            state.uploadProcessNum = 0
-                            state.uploading = false
-                            ElMessage.error(`上传失败, 错误信息: ${data.msg}`);
-                        }
-                        break
-                    // 分片上传文件进行中
-                    case "uploadingFileChunk":
-                        state.uploadProcessNum = Math.round((data.chunk_end as number / data.total_size as number) * 100)
-                        break
-                    // 删除文件
-                    case "delete":
-                        if (data.success) {
-                            ElMessage.success(`删除成功`);
-                            listFiles(state.path)
-                        } else {
-                            ElMessage.error(`删除失败, 错误信息: ${data.msg}`);
-                        }
-                        break
+
+onMounted(() => {
+    ws = new WebSocket(props.wsUrl)
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+        switch (data.type) {
+            // 获取文件列表
+            case "listData":
+                state.path = data.path
+                state.files = data.data
+                state.loading = false
+                break
+            // 分片上传文件完成或失败
+            case "uploadFileChunk":
+                if (data.success) {
+                    state.uploadProcessNum = 100
+                    ElMessage.success(`上传成功`);
+                    setTimeout(() => {
+                        state.uploadProcessNum = 0
+                        state.uploading = false
+                    }, 2000);
+                    listFiles(state.path)
+                } else {
+                    state.uploadProcessNum = 0
+                    state.uploading = false
+                    ElMessage.error(`上传失败, 错误信息: ${data.msg}`);
                 }
-
-            }
-
-            ws.onopen = () => {
-                listFiles("/")
-            }
-
-            ws.onclose = () => {
-                emits("close")
-            }
-
-            ws.onerror = () => {
-                emits("close")
-            }
+                break
+            // 分片上传文件进行中
+            case "uploadingFileChunk":
+                state.uploadProcessNum = Math.round((data.chunk_end as number / data.total_size as number) * 100)
+                break
+            // 删除文件
+            case "delete":
+                if (data.success) {
+                    ElMessage.success(`删除成功`);
+                    listFiles(state.path)
+                } else {
+                    ElMessage.error(`删除失败, 错误信息: ${data.msg}`);
+                }
+                break
         }
     }
-)
+
+    ws.onopen = () => {
+        listFiles("/")
+    }
+
+    ws.onclose = () => {
+        ElMessage.warning("文件管理器连接已关闭")
+        emits("close")
+    }
+
+    ws.onerror = () => {
+        ElMessage.error("文件管理器连接已断开")
+        emits("close")
+    }
+})
 
 watch(
     () => props.showHiddenFiles,
@@ -184,18 +172,6 @@ watch(
         state.showHiddenFiles = newValue
     }
 )
-
-// 处理文件管理器关闭
-const handleFileDrawerClose = async () => {
-    if (!await confirm("确认关闭？")) {
-        return
-    }
-    (ws as WebSocket).send(JSON.stringify({
-        type: "exit",
-    }))
-    state.visible = false
-    emits("close")
-}
 
 // 处理文件路径改变
 const handleFilePathChange = (newPath: string) => {
@@ -289,11 +265,13 @@ const handleDownloadFile = async (file: fileinfo) => {
 }
 
 onUnmounted(() => {
-    ws?.close()
-    state.visible = false
+    (ws as WebSocket).send(JSON.stringify({
+        type: "exit",
+    }))
     state.showHiddenFiles = false
     state.uploadProcessNum = 0
     state.uploading = false
+    ws?.close()
 })
 
 </script>

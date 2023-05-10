@@ -59,8 +59,11 @@
 							@close="item.connected = false" :ws-url="item.terminalUrl" :in-body="false"
 							:padding-bottom="125" @ctrl-u="handleTerminalCtrlU">
 						</SshTerminal>
-						<FileManager @download-file="handleDownloadFile" :visible="fileManagerState.visible"
-							:ws-url="fileManagerState.wsUrl" @close="handleFileManagerClose" />
+						<el-drawer v-model="fileManagerState.visible" title="文件管理器" direction="rtl"
+							:before-close="handleFileManagerDrawerClose" size="50%">
+							<FileManager @download-file="handleDownloadFile" :visible="fileManagerState.visible"
+								:ws-url="fileManagerState.wsUrl" @close="handleFileManagerClose" />
+						</el-drawer>
 					</el-tab-pane>
 				</el-tabs>
 			</el-card>
@@ -77,6 +80,7 @@ import { ITreeItem } from './group.vue'
 import { IHostGroup } from '@/api/resource/host-group';
 import { listTreeWithHostsApi } from '@/api/resource/host-group';
 import FileManager from './file-manager.vue'
+import { confirm } from '@/utils/generic'
 
 interface TabItem {
 	name: number
@@ -195,6 +199,13 @@ const handleNodeClick = (data: ITreeItem, nodeAttr: any, treeNode: TreeNode) => 
 	}
 }
 
+// 处理文件管理器关闭
+const handleFileManagerDrawerClose = async () => {
+	if (!await confirm("确认关闭？")) {
+		return
+	}
+	fileManagerState.visible = false
+}
 
 onMounted(async () => {
 	document.title = `终端管理`

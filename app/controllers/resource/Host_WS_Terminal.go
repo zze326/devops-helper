@@ -11,12 +11,14 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"os"
+	"path"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
 // Terminal Web 终端
-func (c Host) Terminal(_requestUserID int, _requestUsername string, id int) revel.Result {
+func (c Host) Terminal(_requestUserID int, _requestUsername string, _requestUserRealName string, id int) revel.Result {
 	g.Logger.Infof("建立 Web 终端 Websocket 连接")
 	hostModel := new(o_resource.Host)
 	if err := c.DB.Where("id = ?", id).First(hostModel).Error; err != nil {
@@ -25,6 +27,8 @@ func (c Host) Terminal(_requestUserID int, _requestUsername string, id int) reve
 	c.host = hostModel
 	c.operatorID = _requestUserID
 	c.operatorName = _requestUsername
+	c.operatorRealName = _requestUserRealName
+
 	client, err := hostModel.SSHClient()
 	if err != nil {
 		g.Logger.Errorf("%v", err)
@@ -36,20 +40,24 @@ func (c Host) Terminal(_requestUserID int, _requestUsername string, id int) reve
 		}
 	}()
 
-	// 打开一个新的会话
 	session, err := client.NewSession()
 	if err != nil {
 		g.Logger.Errorf("%v", err)
 		return results.JsonError(err)
 	}
-	c.session = session
 	defer func() {
 		if err := session.Close(); err != nil {
 			g.Logger.Errorf("%v", err)
 		}
 	}()
-
+	c.session = session
+	c.startTime = time.Now()
 	defer c.saveSession()
+
+	if err != nil {
+		fmt.Printf("Failed to execute command: %s\n", err)
+		os.Exit(1)
+	}
 
 	fd := int(os.Stdin.Fd())
 	session.Stdout = &c
@@ -66,11 +74,19 @@ func (c Host) Terminal(_requestUserID int, _requestUsername string, id int) reve
 		g.Logger.Errorf("%v", err)
 		return results.JsonError(err)
 	}
+
 	err = session.Shell()
 	if err != nil {
 		g.Logger.Errorf("%v", err)
 		return results.JsonError(err)
 	}
+
+	c.sessionFilepath = path.Join(revel.Config.StringDefault("host.terminal.sessionfiledir", "host-sessions"), fmt.Sprintf("%d", c.host.ID), fmt.Sprintf("%d.sessionb", c.startTime.UnixMicro()))
+	c.sessionFile, err = utils.OpenOrCreateFile(c.sessionFilepath)
+	if err != nil {
+		g.Logger.Errorf("创建会话文件失败: %v", err)
+	}
+	defer c.sessionFile.Close()
 	err = session.Wait()
 	if err != nil {
 		g.Logger.Errorf("%v", err)
@@ -124,8 +140,9 @@ func (c *Host) Read(p []byte) (n int, err error) {
 // Write 响应到 Web 终端
 func (c *Host) Write(p []byte) (n int, err error) {
 	msgBytes := p
-	if _, err := c.sessionBuffer.Write(p); err != nil {
-		g.Logger.Errorf("写入会话记录到缓冲区失败, err: %v", err)
+
+	if _, err := c.sessionFile.Write(p); err != nil {
+		g.Logger.Errorf("写入会话记录到文件失败, err: %v", err)
 	}
 	if !utf8.Valid(msgBytes) {
 		c.writeBuffer.Write(msgBytes)
@@ -148,7 +165,7 @@ func (c *Host) Write(p []byte) (n int, err error) {
 
 // saveSession 保存会话数据到数据库
 func (c *Host) saveSession() {
-	if c.isSaveSession && c.sessionBuffer.Len() <= 0 {
+	if !c.isSaveSession {
 		return
 	}
 
@@ -157,10 +174,13 @@ func (c *Host) saveSession() {
 	session.HostAddr = c.host.Host
 	session.HostName = c.host.Name
 	session.OperatorName = c.operatorName
+	session.StartTime = c.startTime
 	session.OperatorID = c.operatorID
-	session.Data = c.sessionBuffer.Bytes()
+	session.OperatorRealName = c.operatorRealName
+	session.Filepath = c.sessionFilepath
 
 	if err := c.DB.Save(session).Error; err != nil {
 		g.Logger.Errorf("保存会话数据到数据库失败: %s", err.Error())
+		return
 	}
 }

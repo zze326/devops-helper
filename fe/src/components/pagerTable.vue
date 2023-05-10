@@ -9,10 +9,10 @@
                 <ElButton type="primary" icon="Search" @click="listPage">搜索</ElButton>
                 <ElButton icon="RefreshLeft" @click="resetClick">重置
                 </ElButton>
-                <ElButton type="success" icon="Plus" v-permiss="addPermissCode" @click="addClick">添加</ElButton>
+                <ElButton type="success" icon="Plus" v-if="!disableAdd" v-permiss="addPermissCode" @click="addClick">添加</ElButton>
                 <slot name="queryFormBtn"></slot>
             </ElFormItem>
-            
+
         </ElForm>
 
         <el-table v-loading="loading" :data="pagerState.items" stripe style="width: 100%">
@@ -47,6 +47,10 @@ const props = defineProps({
     "placeholder": {
         type: String,
         default: '名称'
+    },
+    "disableAdd": {
+        type: Boolean,
+        default: false
     }
 })
 
