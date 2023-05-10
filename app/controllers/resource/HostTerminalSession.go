@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"bytes"
 	"github.com/revel/revel"
 	o_resource "github.com/zze326/devops-helper/app/models/orm/resource"
 	gormc "github.com/zze326/devops-helper/app/modules/gormc/app/controllers"
@@ -11,6 +12,7 @@ import (
 // HostTerminalSession 主机终端会话
 type HostTerminalSession struct {
 	gormc.Controller
+	writeBuffer bytes.Buffer
 }
 
 // ListPage 分页查询

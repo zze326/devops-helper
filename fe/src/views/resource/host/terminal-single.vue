@@ -29,8 +29,8 @@
 		@connected="handleTerminalConnected" :key="terminalReloadCounter" ref="terminal" :padding-bottom="paddingBottom"
 		:ws-url="wsUrl" @reload="handleTerminalReload" :in-body="true" @ctrl-u="handleTerminalCtrlU"></SshTerminal>
 	<!-- destroy-on-close -->
-	<el-drawer v-if="!isReplayMode" v-model="fileManagerState.visible" title="文件管理器" direction="rtl"
-		:before-close="handleFileManagerDrawerClose" size="50%">
+	<el-drawer v-if="!isReplayMode && $hasPermission(permiss.fileManagerReadonly)" v-model="fileManagerState.visible" title="文件管理器"
+		direction="rtl" :before-close="handleFileManagerDrawerClose" size="50%">
 		<FileManager @download-file="handleDownloadFile" :visible="fileManagerState.visible"
 			:ws-url="fileManagerState.wsUrl" @close="handleFileManagerClose" />
 	</el-drawer>
@@ -46,11 +46,14 @@ import FileManager from './file-manager.vue'
 import { confirm } from '@/utils/generic'
 import { Arrayable } from 'element-plus/es/utils';
 
+const enum permiss {
+	fileManagerReadonly = 'host-terminal-file-manager-readonly',
+}
+
 const router = useRouter();
 const { id, mode } = router.currentRoute.value.query;
 const isReplayMode = mode === 'replay'
-const wsUrl = `${getWsProtocol()}://${import.meta.env.VITE_BASE_URL}/Host/${isReplayMode ? 'TerminalSessionLog' : 'Terminal'}?id=${id}&token=${getLoginInfo()?.token}`
-// const wsUrl = `${getWsProtocol()}://${import.meta.env.VITE_BASE_URL}/Host/TerminalSessionLog?id=4&token=${getLoginInfo()?.token}`
+const wsUrl = `${getWsProtocol()}://${import.meta.env.VITE_BASE_URL}${isReplayMode ? '/HostTerminalSession/Replay' : '/Host/Terminal'}?id=${id}&token=${getLoginInfo()?.token}`
 
 const fileManagerState = reactive<{
 	visible: boolean;

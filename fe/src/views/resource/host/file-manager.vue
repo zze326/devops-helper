@@ -16,7 +16,7 @@
                         <el-col :span="10">
                             <el-progress v-if="state.uploading" :text-inside="true" :stroke-width="32"
                                 :percentage="state.uploadProcessNum" status="success" />
-                            <span v-else>
+                            <span v-else v-if="$hasPermission(permiss.upload)">
                                 <el-button icon="Upload" style="width: 100%;" type="primary"
                                     @click="handleUploadClick">上传文件</el-button>
                                 <input ref="fileInput" type="file" style="display: none" @change="handleFileChange" />
@@ -45,8 +45,10 @@
                 <el-table-column prop="mode" label="属性" width="110" sortable align="center"></el-table-column>
                 <el-table-column label="操作" width="110" align="center">
                     <template #default="{ row }">
-                        <el-button type="primary" v-if="!row.is_dir" link @click="handleDownloadFile(row)">下载</el-button>
-                        <el-button type="danger" v-if="!row.is_dir" link @click="handleDeleteFile(row)">删除</el-button>
+                        <el-button type="primary" v-if="!row.is_dir && $hasPermission(permiss.download)" link
+                            @click="handleDownloadFile(row)">下载</el-button>
+                        <el-button type="danger" v-if="!row.is_dir && hasPermission(permiss.delete)" link
+                            @click="handleDeleteFile(row)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -55,9 +57,15 @@
 </template>
 <script lang="ts" setup>
 import { reactive, ref, onUnmounted, watch, onMounted } from 'vue'
-import { confirm } from '@/utils/generic'
+import { confirm, hasPermission } from '@/utils/generic'
 import { formatBytes } from '@/utils/calc'
 import { ElMessage } from 'element-plus'
+
+const enum permiss {
+    download = 'host-terminal-file-manager-download',
+    delete = 'host-terminal-file-manager-delete',
+    upload = 'host-terminal-file-manager-upload',
+}
 
 interface fileinfo {
     name: string

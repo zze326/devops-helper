@@ -11,7 +11,7 @@ import (
 	"unicode/utf8"
 )
 
-func (c Host) TerminalSessionLog(id int) revel.Result {
+func (c HostTerminalSession) Replay(id int) revel.Result {
 	g.Logger.Infof("建立回放 Web 终端记录 Websocket 连接")
 
 	defer func() {

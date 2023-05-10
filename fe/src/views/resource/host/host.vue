@@ -4,13 +4,14 @@
     <template #queryFormBtn>
       <el-button type="warning" icon="CaretRight" v-permiss="permiss.terminalTree" @click="toTerminalTree()">终端
       </el-button>
-      <el-button type="info" icon="Document" @click="terminalSessionView">终端会话记录</el-button>
+      <el-button type="info" icon="Document" v-permiss="permiss.hostTerminalSessionReadonly"
+        @click="terminalSessionView">终端会话记录</el-button>
     </template>
     <el-table-column prop="id" label="ID" />
     <el-table-column prop="name" label="名称" />
     <el-table-column prop="host" label="主机名/IP" />
     <el-table-column label="操作"
-      v-if="$hasPermission(permiss.edit) || $hasPermission(permiss.delete) || $hasPermission(permiss.terminalTree)">
+      v-if="$hasPermission(permiss.edit) || $hasPermission(permiss.delete) || $hasPermission(permiss.terminalSingle)">
       <template #default="scope">
         <el-button type="primary" icon="Edit" v-permiss="permiss.edit" @click="handleEdit(scope.row)">编辑</el-button>
         <el-button type="danger" icon="Delete" v-permiss="permiss.delete" @click="handleDelete(scope.row)">删除
@@ -138,6 +139,7 @@ const enum permiss {
   delete = 'host-delete',
   terminalSingle = 'host-terminal-single',
   terminalTree = 'host-terminal-tree',
+  hostTerminalSessionReadonly = 'host-terminal-session-readonly'
 }
 
 const state = reactive<

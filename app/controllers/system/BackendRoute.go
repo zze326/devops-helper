@@ -80,7 +80,7 @@ func (c BackendRoute) Get(id int) revel.Result {
 // ListPage 分页查询
 func (c BackendRoute) ListPage(pager *utils.Pager) revel.Result {
 	var backendRouteModels []*o_system.BackendRoute
-	pager.Order = "id desc"
+	pager.Order = "path asc,id desc"
 	total, err := utils.Paginate[o_system.BackendRoute](c.DB, pager, &backendRouteModels)
 	if err != nil {
 		return results.JsonError(err)
@@ -95,7 +95,7 @@ func (c BackendRoute) ListPage(pager *utils.Pager) revel.Result {
 // ListAll 查询所有
 func (c BackendRoute) ListAll() revel.Result {
 	var backendRouteModels []*o_system.BackendRoute
-	if err := c.DB.Find(&backendRouteModels).Error; err != nil {
+	if err := c.DB.Order("path asc").Find(&backendRouteModels).Error; err != nil {
 		return results.JsonError(err)
 	}
 	return results.JsonOkData(backendRouteModels)

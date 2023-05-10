@@ -59,7 +59,7 @@
 							@close="item.connected = false" :ws-url="item.terminalUrl" :in-body="false"
 							:padding-bottom="125" @ctrl-u="handleTerminalCtrlU">
 						</SshTerminal>
-						<el-drawer v-model="fileManagerState.visible" title="文件管理器" direction="rtl"
+						<el-drawer v-if="$hasPermission(permiss.fileManagerReadonly)" v-model="fileManagerState.visible" title="文件管理器" direction="rtl"
 							:before-close="handleFileManagerDrawerClose" size="50%">
 							<FileManager @download-file="handleDownloadFile" :visible="fileManagerState.visible"
 								:ws-url="fileManagerState.wsUrl" @close="handleFileManagerClose" />
@@ -81,6 +81,10 @@ import { IHostGroup } from '@/api/resource/host-group';
 import { listTreeWithHostsApi } from '@/api/resource/host-group';
 import FileManager from './file-manager.vue'
 import { confirm } from '@/utils/generic'
+
+const enum permiss {
+	fileManagerReadonly = 'host-terminal-file-manager-readonly',
+}
 
 interface TabItem {
 	name: number

@@ -3,13 +3,15 @@
 		<ElCard>
 			<PagerTable :loading="tableDataLoading" :pager-state="pagerState" @list-page="listPage"
 				:add-permiss-code="permiss.add" @add-click="handleAdd" placeholder="名称/路由路径">
-				<el-table-column prop="id" label="ID" />
+				<el-table-column prop="id" label="ID" width="100" />
 				<el-table-column prop="name" label="名称" />
-				<el-table-column prop="path" label="路由路径" />
+				<el-table-column prop="path" label="路由路径" min-width="150" />
 				<el-table-column label="操作" v-if="$hasPermission(permiss.edit) || $hasPermission(permiss.delete)">
 					<template #default="scope">
-						<el-button type="primary" icon="Edit" v-permiss="permiss.edit" @click="handleEdit(scope.row)">编辑</el-button>
-						<el-button type="danger" icon="Delete" v-permiss="permiss.delete" @click="handleDelete(scope.row)">删除</el-button>
+						<el-button type="primary" icon="Edit" v-permiss="permiss.edit"
+							@click="handleEdit(scope.row)">编辑</el-button>
+						<el-button type="danger" icon="Delete" v-permiss="permiss.delete"
+							@click="handleDelete(scope.row)">删除</el-button>
 					</template>
 				</el-table-column>
 			</PagerTable>

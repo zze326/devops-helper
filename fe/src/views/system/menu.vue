@@ -26,14 +26,14 @@
 						{{ $formatDate(scope.row.created_at) }}
 					</template>
 				</el-table-column>
-				<el-table-column label="启用">
+				<el-table-column align="center" label="启用">
 					<template #default="scope">
 						<el-switch :disabled="!$hasPermission(permiss.enable ?? '')" v-model="scope.row.enabled"
 							@change="handleChangeStatus(scope.row)"
 							style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" />
 					</template>
 				</el-table-column>
-				<el-table-column label="操作" min-width="120px"
+				<el-table-column align="center" label="操作" min-width="120px"
 					v-if="$hasPermission(permiss.edit) || $hasPermission(permiss.delete)">
 					<template #default="scope">
 						<ElButton icon="Plus" type="success" v-permiss="permiss.add" @click="handleAdd(scope.row.id)">添加

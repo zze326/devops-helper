@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 import { getLoginInfo } from '@/utils/login';
-import {setPermissionCodes} from '@/utils/permiss';
+import { setPermissionCodes } from '@/utils/permiss';
 import { usePermissStore } from '@/store/permiss';
 import { App } from 'vue';
 import { listRoutesAndPermissionCodesForCurrentUserApi } from '@/api/app';

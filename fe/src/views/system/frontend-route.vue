@@ -3,7 +3,7 @@
 		<ElCard>
 			<PagerTable :loading="tableDataLoading" :pager-state="pagerState" @list-page="listPage" @add-click="handleAdd"
 				:add-permiss-code="permiss.add" placeholder="名称/标题">
-				<el-table-column prop="id" label="ID" />
+				<el-table-column prop="id" label="ID" width="100"/>
 				<el-table-column prop="name" label="名称" />
 				<el-table-column prop="title" label="标题" />
 				<el-table-column prop="route_path" label="路由路径" />

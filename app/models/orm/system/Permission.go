@@ -41,7 +41,7 @@ func (Permission) ListTree(db *gorm.DB, preloadMenus bool, preloadFrontendRoutes
 	}
 
 	// 从数据库中获取所有权限记录
-	if err := scopes.Find(&permissions).Error; err != nil {
+	if err := scopes.Order("name asc").Find(&permissions).Error; err != nil {
 		return nil, nil, err
 	}
 
