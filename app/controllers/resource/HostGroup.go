@@ -75,7 +75,7 @@ func (c HostGroup) ListTreeWithHosts(_requestUserID int) revel.Result {
 	// 构建 ID 到权限映射的 map
 	serverGroupMap := make(map[int]*o_resource.HostGroup, len(serverGroupModels))
 	for _, serverGroup := range serverGroupModels {
-		if len(serverGroup.HostGroupPermissions) == 0 {
+		if !userModel.IsSuper() && len(serverGroup.HostGroupPermissions) == 0 {
 			serverGroup.Hosts = nil
 		}
 		serverGroupMap[serverGroup.ID] = serverGroup

@@ -375,7 +375,7 @@ const terminalSessionView = async () => {
 
 :deep(.input1 .el-input__wrapper) {
   border-radius: 0;
-  width: 60px;
+  width: 120px;
 }
 
 :deep(.input2 .el-input__wrapper) {
