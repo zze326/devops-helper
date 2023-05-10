@@ -11,6 +11,7 @@ type AddHostReq struct {
 	UseKey                      bool   `json:"use_key"`
 	Desc                        string `json:"desc"`
 	UpdatePasswordAndPrivateKey bool   `json:"update_password_and_private_key"`
+	SaveSession                 bool   `json:"save_session"`
 }
 
 type EditHostReq struct {

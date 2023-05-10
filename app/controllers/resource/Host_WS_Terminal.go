@@ -20,7 +20,7 @@ import (
 // Terminal Web 终端
 func (c Host) Terminal(_requestUserID int, _requestUsername string, _requestUserRealName string, id int) revel.Result {
 	g.Logger.Infof("建立 Web 终端 Websocket 连接")
-	c.isSaveSession = revel.Config.BoolDefault("host.terminal.savesession", false)
+
 	hostModel := new(o_resource.Host)
 	if err := c.DB.Where("id = ?", id).First(hostModel).Error; err != nil {
 		return results.JsonError(err)
@@ -29,6 +29,8 @@ func (c Host) Terminal(_requestUserID int, _requestUsername string, _requestUser
 	c.operatorID = _requestUserID
 	c.operatorName = _requestUsername
 	c.operatorRealName = _requestUserRealName
+
+	c.isSaveSession = revel.Config.BoolDefault("host.terminal.savesession", false) && hostModel.SaveSession
 
 	client, err := hostModel.SSHClient()
 	if err != nil {
@@ -82,8 +84,8 @@ func (c Host) Terminal(_requestUserID int, _requestUsername string, _requestUser
 		return results.JsonError(err)
 	}
 
-	c.sessionFilepath = path.Join(revel.Config.StringDefault("host.terminal.sessionfiledir", "host-sessions"), fmt.Sprintf("%d", c.host.ID), fmt.Sprintf("%d.sessionb", c.startTime.UnixMicro()))
 	if c.isSaveSession {
+		c.sessionFilepath = path.Join(revel.Config.StringDefault("host.terminal.sessionfiledir", "host-sessions"), fmt.Sprintf("%d", c.host.ID), fmt.Sprintf("%d.sessionb", c.startTime.UnixMicro()))
 		c.sessionFile, err = utils.OpenOrCreateFile(c.sessionFilepath)
 		if err != nil {
 			g.Logger.Errorf("创建会话文件失败: %v", err)
@@ -146,8 +148,10 @@ func (c *Host) Read(p []byte) (n int, err error) {
 func (c *Host) Write(p []byte) (n int, err error) {
 	msgBytes := p
 
-	if _, err := c.sessionFile.Write(p); err != nil {
-		g.Logger.Errorf("写入会话记录到文件失败, err: %v", err)
+	if c.isSaveSession {
+		if _, err := c.sessionFile.Write(p); err != nil {
+			g.Logger.Errorf("写入会话记录到文件失败, err: %v", err)
+		}
 	}
 	if !utf8.Valid(msgBytes) {
 		c.writeBuffer.Write(msgBytes)

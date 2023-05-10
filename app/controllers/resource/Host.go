@@ -76,7 +76,7 @@ func (c Host) Delete(id int) revel.Result {
 
 func (c Host) Get(id int) revel.Result {
 	hostModel := new(o_resource.Host)
-	if err := c.DB.Preload("HostGroups").Where("id = ?", id).First(hostModel).Error; err != nil {
+	if err := c.DB.Preload("HostGroups").Omit("private_key").Where("id = ?", id).First(hostModel).Error; err != nil {
 		return results.JsonError(err)
 	}
 	hostModel.Password = strings.Repeat("*", utf8.RuneCountInString(hostModel.Password))
@@ -127,6 +127,7 @@ func (c Host) Edit(req v_resource.EditHostReq) revel.Result {
 	hostModel.UseKey = req.UseKey
 	hostModel.PrivateKey = req.PrivateKey
 	hostModel.Password = req.Password
+	hostModel.SaveSession = req.SaveSession
 
 	hostModel.Desc = req.Desc
 
@@ -149,6 +150,7 @@ func (c Host) Edit(req v_resource.EditHostReq) revel.Result {
 func (c Host) ListPage(pager *utils.Pager, hostGroupID int) revel.Result {
 	var hostModels []*o_resource.Host
 	pager.Order = "id desc"
+	pager.OmitColumns = []string{"password", "private_key", "save_session"}
 	if hostGroupID > 0 {
 		pager.Wheres = append(pager.Wheres, utils.WhereClause{
 			Logic: "and",
@@ -164,11 +166,6 @@ func (c Host) ListPage(pager *utils.Pager, hostGroupID int) revel.Result {
 	total, err := utils.Paginate[o_resource.Host](c.DB, pager, &hostModels)
 	if err != nil {
 		return results.JsonError(err)
-	}
-
-	for _, model := range hostModels {
-		model.Password = ""
-		model.PrivateKey = ""
 	}
 
 	return results.JsonOkData(results.PageData{

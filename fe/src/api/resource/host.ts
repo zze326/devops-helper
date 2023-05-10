@@ -13,6 +13,7 @@ export interface IHost {
     desc?: string
     host_groups?: IHostGroup[]
     host_group_ids?: number[]
+    save_session?: boolean
     update_password_and_private_key?: boolean
 }
 

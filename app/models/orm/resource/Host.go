@@ -10,15 +10,16 @@ import (
 
 type Host struct {
 	gormc.Model
-	Name       string       `gorm:"comment:名称" json:"name"`
-	Host       string       `gorm:"comment:主机名或IP" json:"host"`
-	Port       int          `gorm:"comment:端口" json:"port"`
-	Username   string       `gorm:"comment:用户名" json:"username"`
-	Password   string       `gorm:"comment:密码" json:"password"`
-	PrivateKey string       `gorm:"size:4096;comment:私钥;" json:"private_key"`
-	UseKey     bool         `gorm:"comment:是否使用公钥连接" json:"use_key"`
-	Desc       string       `gorm:"comment:描述" json:"desc"`
-	HostGroups []*HostGroup `gorm:"many2many:host_group_host;" json:"host_groups"`
+	Name        string       `gorm:"comment:名称" json:"name"`
+	Host        string       `gorm:"comment:主机名或IP" json:"host"`
+	Port        int          `gorm:"comment:端口" json:"port"`
+	Username    string       `gorm:"comment:用户名" json:"username"`
+	Password    string       `gorm:"comment:密码" json:"password"`
+	PrivateKey  string       `gorm:"size:4096;comment:私钥;" json:"private_key"`
+	UseKey      bool         `gorm:"comment:是否使用公钥连接" json:"use_key"`
+	Desc        string       `gorm:"comment:描述" json:"desc"`
+	HostGroups  []*HostGroup `gorm:"many2many:host_group_host;" json:"host_groups"`
+	SaveSession bool         `gorm:"comment:是否保存会话;default:0;" json:"save_session"`
 }
 
 func (Host) TableName() string {

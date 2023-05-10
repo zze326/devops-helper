@@ -34,9 +34,7 @@
           </template>
         </el-tree-select>
       </ElFormItem>
-      <ElFormItem label="名称" prop="name">
-        <el-input v-model="editFormData.name" type="text" />
-      </ElFormItem>
+
       <ElFormItem label="连接地址" prop="ssh_uri">
         <el-input style="display: none;" v-model="editFormData.ssh_uri"></el-input>
         <div class="inputs">
@@ -57,6 +55,18 @@
           </ElFormItem>
         </div>
       </ElFormItem>
+      <el-row :gutter="24">
+        <el-col :span="18">
+          <ElFormItem label="名称" prop="name">
+            <el-input v-model="editFormData.name" type="text" />
+          </ElFormItem>
+        </el-col>
+        <el-col :span="6">
+          <ElFormItem label="保存会话" prop="save_session">
+            <el-switch v-model="editFormData.save_session" />
+          </ElFormItem>
+        </el-col>
+      </el-row>
       <el-row :gutter="24">
         <el-col :span="18" v-if="!editFormData.use_key">
           <ElFormItem label="密码" prop="password">
@@ -157,6 +167,7 @@ const state = reactive<
       password: '',
       private_key: '',
       use_key: false,
+      save_session: false,
       desc: '',
       host_group_ids: [],
     },
@@ -319,7 +330,7 @@ const handleEdit = async (row: Required<IHost>) => {
   state.editDialog.showPassword = false
   state.editFormData.update_password_and_private_key = false
   state.editDialog.title = '编辑主机'
-  state.editFormData = _.pick(hostRes.data, ['id', 'name', 'host', 'port', 'username', 'password', 'use_key', 'desc'])
+  state.editFormData = _.pick(hostRes.data, ['id', 'name', 'host', 'port', 'username', 'password', 'use_key', 'save_session', 'desc'])
   state.editFormData.private_key = 'tmp'
   state.editFormData.ssh_uri = `ssh://${state.editFormData.username}@${state.editFormData.host}:${state.editFormData.port}`
   state.editFormData.host_group_ids = hostRes.data.host_groups.map(item => item.id ?? 0)
