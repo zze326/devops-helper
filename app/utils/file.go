@@ -44,3 +44,11 @@ func FileExists(path string) bool {
 	_, err := os.Lstat(path)
 	return !os.IsNotExist(err)
 }
+
+// 确保目标文件不存在
+func EnsureFileNotExists(path string) error {
+	if FileExists(path) {
+		return os.Remove(path)
+	}
+	return nil
+}

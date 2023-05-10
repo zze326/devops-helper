@@ -32,6 +32,7 @@ type Host struct {
 	operatorID       int
 	operatorRealName string
 	isSaveSession    bool
+	hasInput         bool
 	startTime        time.Time
 }
 

@@ -20,6 +20,7 @@ import (
 // Terminal Web 终端
 func (c Host) Terminal(_requestUserID int, _requestUsername string, _requestUserRealName string, id int) revel.Result {
 	g.Logger.Infof("建立 Web 终端 Websocket 连接")
+	c.isSaveSession = revel.Config.BoolDefault("host.terminal.savesession", false)
 	hostModel := new(o_resource.Host)
 	if err := c.DB.Where("id = ?", id).First(hostModel).Error; err != nil {
 		return results.JsonError(err)
@@ -82,11 +83,15 @@ func (c Host) Terminal(_requestUserID int, _requestUsername string, _requestUser
 	}
 
 	c.sessionFilepath = path.Join(revel.Config.StringDefault("host.terminal.sessionfiledir", "host-sessions"), fmt.Sprintf("%d", c.host.ID), fmt.Sprintf("%d.sessionb", c.startTime.UnixMicro()))
-	c.sessionFile, err = utils.OpenOrCreateFile(c.sessionFilepath)
-	if err != nil {
-		g.Logger.Errorf("创建会话文件失败: %v", err)
+	if c.isSaveSession {
+		c.sessionFile, err = utils.OpenOrCreateFile(c.sessionFilepath)
+		if err != nil {
+			g.Logger.Errorf("创建会话文件失败: %v", err)
+		} else {
+			defer c.sessionFile.Close()
+		}
 	}
-	defer c.sessionFile.Close()
+
 	err = session.Wait()
 	if err != nil {
 		g.Logger.Errorf("%v", err)
@@ -112,7 +117,7 @@ func (c *Host) Read(p []byte) (n int, err error) {
 	}
 	if xtermMsg.MsgType == "input" {
 		if cmdStr := strings.TrimSpace(c.readBuffer.String()); xtermMsg.Input == "\r" && len(cmdStr) > 0 {
-			c.isSaveSession = true
+			c.hasInput = true
 			c.Log.Infof("输入命令：%s", cmdStr)
 			c.readBuffer.Reset()
 		}
@@ -165,7 +170,13 @@ func (c *Host) Write(p []byte) (n int, err error) {
 
 // saveSession 保存会话数据到数据库
 func (c *Host) saveSession() {
-	if !c.isSaveSession {
+	if c.isSaveSession && !c.hasInput {
+		if err := utils.EnsureFileNotExists(c.sessionFilepath); err != nil {
+			g.Logger.Errorf("删除空会话文件失败: %v", err)
+		}
+	}
+
+	if !c.isSaveSession || !c.hasInput {
 		return
 	}
 
