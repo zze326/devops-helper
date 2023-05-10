@@ -76,9 +76,7 @@ import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { TabPaneName, TabsPaneContext, TreeNode } from 'element-plus';
 import { getWsProtocol, getHttpProtocol } from '@/utils/generic'
 import { getLoginInfo } from '@/utils/login'
-import { ITreeItem } from './group.vue'
-import { IHostGroup } from '@/api/resource/host-group';
-import { listTreeWithHostsApi } from '@/api/resource/host-group';
+import { IHostGroup, ITreeItem, listTreeWithHostsApi } from '@/api/resource/host-group';
 import FileManager from './file-manager.vue'
 import { confirm } from '@/utils/generic'
 
@@ -102,7 +100,6 @@ const treeState = reactive<{
 }>({
 	data: [],
 })
-
 
 // tab 状态
 const tabState = reactive<{ data: TabItem[], activeTab: number }>({

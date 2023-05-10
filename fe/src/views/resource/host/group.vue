@@ -33,7 +33,7 @@
 <script lang="ts" setup>
 import { reactive, getCurrentInstance, nextTick, onMounted, ref, watch } from 'vue'
 import { ElMessage, TreeNode, ElTree } from 'element-plus';
-import { addApi, listTreeApi, renameApi, deleteApi, IHostGroup } from '@/api/resource/host-group';
+import { addApi, listTreeApi, renameApi, deleteApi, IHostGroup, ITreeItem } from '@/api/resource/host-group';
 import { confirm, hasPermission } from '@/utils/generic'
 import { useHostStore } from '@/store/resource/host'
 
@@ -43,20 +43,8 @@ const enum permiss {
     delete = 'host-group-delete',
 }
 
-
 const appInstance = getCurrentInstance()
 const treeSelectRef = ref<any>(null)
-
-export interface ITreeItem {
-    id: number
-    label: string
-    editable?: boolean
-    inputValue?: string
-    children?: ITreeItem[]
-    hostCount: number
-    permissionCount: number
-    isHost?: boolean
-}
 
 // IHostGroup[] => ITreeItem[]
 const convertTree = (tree: IHostGroup[]): ITreeItem[] => {
@@ -73,7 +61,6 @@ const convertTree = (tree: IHostGroup[]): ITreeItem[] => {
     })
     return result
 }
-
 
 // 递归移除 data 中的元素
 function removeItems(data: ITreeItem[], callback: (item: ITreeItem) => boolean): void {

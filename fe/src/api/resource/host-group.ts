@@ -2,6 +2,17 @@ import request from '@/utils/request';
 import { IHost } from './host';
 import { IHostGroupPermission } from './host-group-permission';
 
+export interface ITreeItem {
+    id: number
+    label: string
+    editable?: boolean
+    inputValue?: string
+    children?: ITreeItem[]
+    hostCount: number
+    permissionCount: number
+    isHost?: boolean
+}
+
 export interface IHostGroup {
     id?: number
     name: string
