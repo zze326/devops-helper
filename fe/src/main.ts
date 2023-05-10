@@ -5,9 +5,8 @@ import App from '@/App.vue';
 import { initRouter } from '@/router';
 import 'element-plus/dist/index.css';
 import '@/assets/css/icon.css';
-import { setGlobalFunc } from '@/utils/generic'
+import { setGlobalFunc, hasPermission } from '@/utils/generic'
 import { usePermissStore } from '@/store/permiss';
-import { getLoginInfo } from '@/utils/login';
 
 const app = createApp(App);
 
@@ -21,18 +20,13 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 console.log(import.meta.env)
 
-const permissStore = usePermissStore()
 app.directive('permiss', {
     mounted(el, binding) {
         if (!binding.value) {
             return
         }
 
-        if (getLoginInfo()?.userinfo.username === 'admin') {
-            return
-        }
-
-        if (!permissStore.currentCodes.includes(binding.value)) {
+        if (!hasPermission(binding.value)) {
             el['hidden'] = true;
         }
     },

@@ -21,7 +21,7 @@ func (u User) IsSuper() bool {
 		return true
 	}
 	for _, role := range u.Roles {
-		if role.Name == "admin" {
+		if role.Code == "admin" {
 			return true
 		}
 	}

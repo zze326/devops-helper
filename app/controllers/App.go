@@ -24,7 +24,7 @@ func (c App) Ping() revel.Result {
 // Login 登录
 func (c App) Login(loginData v_system.AppLogin) revel.Result {
 	userModel := new(o_system.User)
-	if err := c.DB.First(userModel, "username = ?", loginData.Username).Error; err != nil {
+	if err := c.DB.Preload("Roles").First(userModel, "username = ?", loginData.Username).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return results.JsonError(fmt.Errorf("用户不存在"))
 		}
@@ -41,7 +41,7 @@ func (c App) Login(loginData v_system.AppLogin) revel.Result {
 // RefreshLogin 刷新 Token
 func (c App) RefreshLogin(_requestUserID int) revel.Result {
 	userModel := new(o_system.User)
-	if err := c.DB.First(userModel, _requestUserID).Error; err != nil {
+	if err := c.DB.Preload("Roles").First(userModel, _requestUserID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return results.JsonError(fmt.Errorf("用户不存在"))
 		}
@@ -61,6 +61,7 @@ func createLoginResult(userModel *o_system.User) revel.Result {
 		ID       uint   `json:"id"`
 		Username string `json:"username"`
 		RealName string `json:"real_name"`
+		IsSuper  bool   `json:"is_super"`
 	}
 
 	type jwtResp struct {
@@ -78,6 +79,7 @@ func createLoginResult(userModel *o_system.User) revel.Result {
 			ID:       uint(userModel.ID),
 			Username: userModel.Username,
 			RealName: userModel.RealName,
+			IsSuper:  userModel.IsSuper(),
 		},
 	})
 }
@@ -103,8 +105,10 @@ func (c App) ListRoutesAndPermissionCodesForCurrentUser(_requestUserID int) reve
 		}
 	}
 
-	for permissionCode, _ := range permissionCodeMap {
-		permissionCodes = append(permissionCodes, permissionCode)
+	if !requestUser.IsSuper() {
+		for permissionCode, _ := range permissionCodeMap {
+			permissionCodes = append(permissionCodes, permissionCode)
+		}
 	}
 
 	var frontendRouteModels []*o_system.FrontendRoute

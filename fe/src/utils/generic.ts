@@ -37,7 +37,7 @@ export const formatDate = (date: string) => {
 };
 
 export const hasPermission = (code: string): boolean => {
-    if (getLoginInfo()?.userinfo.username === 'admin') {
+    if (getLoginInfo()?.userinfo.is_super) {
         return true
     }
     const permissStore = usePermissStore()
@@ -61,7 +61,7 @@ export const getWsProtocol = (url: string | null = null): string => {
     return isSecure ? "wss" : "ws";
 };
 
-export const getHttpProtocol = (url: string | null = null): string => { 
+export const getHttpProtocol = (url: string | null = null): string => {
     // 如果没有指定 URL，则使用当前页面的 URL
     if (!url) {
         url = window.location.href;

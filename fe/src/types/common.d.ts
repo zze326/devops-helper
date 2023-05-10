@@ -39,12 +39,13 @@ interface ILoginInfo {
         id: number;
         username: string;
         real_name: string;
+        is_super: boolean;
     }
     access_expire: number;
     refresh_after: number;
 }
 
-interface ITreeSelectData{
+interface ITreeSelectData {
     label: string,
     value?: number,
     children?: ITreeSelectData[],
