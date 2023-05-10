@@ -14,7 +14,6 @@ export interface IMenu {
 }
 
 export const listTreeApi = (): IRespData<Required<IMenu>[]> => request.get("/Menu/ListTree")
-
 export const createApi = (data: IMenu): IRespData<null> => request.post("/Menu/Add", data)
 export const deleteApi = (id: number): IRespData<null> => request.delete("/Menu/Delete", { params: { id } })
 export const editApi = (data: IMenu): IRespData<null> => request.post("/Menu/Edit", data)

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <ElForm v-if="withSearch" ref="queryForm" :inline="true">
+        <ElForm v-if="withSearch" ref="queryForm" @submit.prevent :inline="true">
             <ElFormItem label="模糊搜索" prop="search">
                 <el-input icon="Plus" ref="searchInput" v-model="pagerState.search" @keyup.enter='listPage'
                     :placeholder="placeholder" clearable />
@@ -9,10 +9,10 @@
                 <ElButton type="primary" icon="Search" @click="listPage">搜索</ElButton>
                 <ElButton icon="RefreshLeft" @click="resetClick">重置
                 </ElButton>
-                <ElButton type="success" icon="Plus" v-if="!disableAdd" v-permiss="addPermissCode" @click="addClick">添加</ElButton>
+                <ElButton type="success" icon="Plus" v-if="!disableAdd" v-permiss="addPermissCode" @click="addClick">添加
+                </ElButton>
                 <slot name="queryFormBtn"></slot>
             </ElFormItem>
-
         </ElForm>
 
         <el-table v-loading="loading" :data="pagerState.items" stripe style="width: 100%">
