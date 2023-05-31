@@ -11,17 +11,21 @@ interface IPageData<T> {
     items: T[];
 }
 
+interface IWhereColumn {
+    column: string
+    op: string
+    value: number | string | boolean
+}
+
 interface IPager {
     page: number;
     page_size: number;
     wheres: {
         logic: "or" | "and";
-        columns: {
-            column: string;
-            op: string;
-            value: string;
-        }[]
+        columns: IWhereColumn[]
     }[]
+    addWhere: (logic: "or" | "and", ...columns: IWhereColumn[]) => void;
+    setSearch: (value: string, columns: string[]) => void;
 }
 
 interface IPagerState<T> {
@@ -58,4 +62,12 @@ interface IPageState<T> {
     editDialog: { visible: boolean, title: string, add: boolean },
     tableDataLoading: boolean,
     tableData?: T[],
+}
+
+interface IDataDictItem {
+    id?: number
+    label: string
+    value: number
+    sort: number
+    data_dict_id: number
 }

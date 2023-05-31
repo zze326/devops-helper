@@ -1,8 +1,10 @@
+import { IMenu, existsByRoutePath as existsMenuByRoutePath } from '@/api/system/menu';
 import { defineStore } from 'pinia';
 
 export const useMenuStore = defineStore('menu', {
     state: () => {
         return {
+            allMenus: <Required<IMenu>[]>[],
             topMenus: <ITopMenu[]>[],
             sidebarMenus: <ISidebarMenu>{},
             activeTopMenuID: <number>0
@@ -17,6 +19,9 @@ export const useMenuStore = defineStore('menu', {
         }
     },
     actions: {
+        setAllMenus(val: Required<IMenu>[]) {
+            this.allMenus = val;
+        },
         setTopMenus(val: ITopMenu[]) {
             this.topMenus = val;
         },
@@ -25,6 +30,13 @@ export const useMenuStore = defineStore('menu', {
         },
         setActiveTopMenuID(val: number) {
             this.activeTopMenuID = val;
+        },
+        routeChange(path: string) {
+            this.allMenus.forEach(menuItem => {
+                if (existsMenuByRoutePath(menuItem.children, path)) {
+                    this.setActiveTopMenuID(menuItem.id)
+                }
+            })
         }
     }
 });

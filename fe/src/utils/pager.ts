@@ -14,11 +14,7 @@ export class Pager implements IPager {
     search?: string;
     wheres: {
         logic: "or" | "and";
-        columns: {
-            column: string;
-            op: string;
-            value: string;
-        }[];
+        columns: IWhereColumn[];
     }[] = [];
     select_columns?: string[]
 
@@ -37,14 +33,10 @@ export class Pager implements IPager {
         })
     }
 
-    addWhere = (logic: "or" | "and", column: string, op: string, value: string) => {
+    addWhere = (logic: "or" | "and", ...columns: IWhereColumn[]) => {
         this.wheres.push({
             logic,
-            columns: [{
-                column,
-                op,
-                value
-            }]
+            columns
         })
     }
 }

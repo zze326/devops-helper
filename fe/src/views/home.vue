@@ -13,19 +13,18 @@
 	</div>
 </template>
 <script setup lang="ts">
-import { onBeforeMount } from 'vue';
-import { useSidebarStore } from '@/store/sidebar';
-import { useTagsStore } from '@/store/tags';
-import { useMenuStore } from '@/store/menu';
-import { listTreeMenusForCurrentUserApi } from '@/api/app'
-import { IMenu } from '@/api/system/menu';
-
-
+import {onBeforeMount} from 'vue';
+import {useSidebarStore} from '@/store/sidebar';
+import {useTagsStore} from '@/store/tags';
+import {useMenuStore} from '@/store/menu';
+import {listTreeMenusForCurrentUserApi} from '@/api/app'
+import {IMenu} from '@/api/system/menu';
+import {useRoute} from 'vue-router';
 
 const sidebar = useSidebarStore();
 const tags = useTagsStore();
 const menu = useMenuStore();
-
+const route = useRoute();
 
 // 将菜单数据转换为树形结构
 function toMenuItems(menus: IMenu[]): IMenuItem[] {
@@ -45,6 +44,8 @@ function toMenuItems(menus: IMenu[]): IMenuItem[] {
 
 onBeforeMount(async () => {
 	const res = await listTreeMenusForCurrentUserApi()
+	// 保存菜单数据
+	menu.setAllMenus(res.data)
 	// 设置顶部菜单
 	menu.setTopMenus(res.data.map(menuItem => {
 		return <ITopMenu>{
@@ -56,10 +57,9 @@ onBeforeMount(async () => {
 	// 设置侧边栏菜单
 	const sidebarMenus: ISidebarMenu = {};
 	res.data.forEach(topMenu => {
-		const children = toMenuItems(topMenu.children ?? []);
-		sidebarMenus[topMenu.id] = children;
+    sidebarMenus[topMenu.id] = toMenuItems(topMenu.children ?? []);
 	});
 	menu.setSidebarMenus(sidebarMenus)
-	menu.setActiveTopMenuID(menu.topMenus[0].id);
+	menu.routeChange(route.path)
 })
 </script>

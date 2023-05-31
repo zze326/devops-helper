@@ -91,6 +91,20 @@ func (c App) ListRoutesAndPermissionCodesForCurrentUser(_requestUserID int) reve
 		return results.JsonError(err)
 	}
 
+	if requestUser.IsSuper() {
+		var frontendRouteModels []*o_system.FrontendRoute
+		if err := c.DB.Find(&frontendRouteModels).Error; err != nil {
+			return results.JsonError(err)
+		}
+		return results.JsonOkData(struct {
+			FrontendRoutes  []*o_system.FrontendRoute `json:"routes"`
+			PermissionCodes []string                  `json:"permission_codes"`
+		}{
+			FrontendRoutes:  frontendRouteModels,
+			PermissionCodes: []string{},
+		})
+	}
+
 	_, permissionMap, err := o_system.Permission{}.ListTree(c.DB, false, true, false)
 	if err != nil {
 		return results.JsonError(err)
@@ -106,7 +120,7 @@ func (c App) ListRoutesAndPermissionCodesForCurrentUser(_requestUserID int) reve
 	}
 
 	if !requestUser.IsSuper() {
-		for permissionCode, _ := range permissionCodeMap {
+		for permissionCode := range permissionCodeMap {
 			permissionCodes = append(permissionCodes, permissionCode)
 		}
 	}
@@ -176,7 +190,7 @@ func (c App) ListTreeMenusForCurrentUser(_requestUserID int) revel.Result {
 	}
 
 	var relatedMenus = make(map[int]*o_system.Menu, len(uniqueMenuIDs))
-	for k, _ := range uniqueMenuIDs {
+	for k := range uniqueMenuIDs {
 		// 添加关联菜单的父菜单
 		loopAddParentMenu(menuMap[k], relatedMenus, menuMap)
 	}

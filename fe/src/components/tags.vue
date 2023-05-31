@@ -1,14 +1,11 @@
 <template>
 	<div class="tags" v-if="tags.show">
 		<ul>
-			<li
-				class="tags-li"
-				v-for="(item, index) in tags.list"
-				:class="{ active: isActive(item.path) }"
-				:key="index"
-			>
+			<li class="tags-li" v-for="(item, index) in tags.list" :class="{ active: isActive(item.path) }" :key="index">
 				<router-link :to="item.path" class="tags-li-title">{{ item.title }}</router-link>
-				<el-icon @click="closeTags(index)"><Close /></el-icon>
+				<el-icon @click="closeTags(index)">
+					<Close />
+				</el-icon>
 			</li>
 		</ul>
 		<div class="tags-close-box">
@@ -31,7 +28,8 @@
 </template>
 
 <script setup lang="ts">
-import { useTagsStore } from '../store/tags';
+import { useTagsStore } from '@/store/tags';
+import { useMenuStore } from '@/store/menu';
 import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
@@ -41,6 +39,7 @@ const isActive = (path: string) => {
 };
 
 const tags = useTagsStore();
+const menu = useMenuStore();
 // 关闭单个标签
 const closeTags = (index: number) => {
 	const delItem = tags.list[index];
@@ -55,6 +54,7 @@ const closeTags = (index: number) => {
 
 // 设置标签
 const setTags = (route: any) => {
+	menu.routeChange(route.path);
 	const isExist = tags.list.some(item => {
 		return item.path === route.fullPath;
 	});

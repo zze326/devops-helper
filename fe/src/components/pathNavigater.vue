@@ -20,7 +20,6 @@
 import { computed } from 'vue'
 
 const emits = defineEmits(["click"])
-
 const props = defineProps({
     path: {
         type: String,

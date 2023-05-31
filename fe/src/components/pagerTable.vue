@@ -5,6 +5,7 @@
                 <el-input icon="Plus" ref="searchInput" v-model="pagerState.search" @keyup.enter='listPage'
                     :placeholder="placeholder" clearable />
             </ElFormItem>
+            <slot name="queryFormItem"></slot>
             <ElFormItem>
                 <ElButton type="primary" icon="Search" @click="listPage">搜索</ElButton>
                 <ElButton icon="RefreshLeft" @click="resetClick">重置
